@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Use environment variable if available, else fallback to Render backend
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://website-analyzer-backend.onrender.com';
 
 const api = axios.create({
@@ -8,9 +9,10 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // explicitly disable credentials for CORS clarity
 });
 
-// Request interceptor
+// Request interceptor for logging
 api.interceptors.request.use(
   (config) => {
     console.log('API Request:', config.method?.toUpperCase(), config.url);
@@ -21,36 +23,41 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor for logging and error handling
 api.interceptors.response.use(
   (response) => {
     console.log('API Response:', response.status, response.config.url);
     return response;
   },
   (error) => {
-    console.error('API Error:', error.response?.status, error.message);
+    if (error.response) {
+      console.error('API Error:', error.response.status, error.message);
+    } else {
+      console.error('Network/Unknown Error:', error.message);
+    }
     return Promise.reject(error);
   }
 );
 
+// API service with corrected routes
 export const apiService = {
   analyzeWebsite: async (url) => {
-    const response = await api.post('/analyze', { url });
+    const response = await api.post('/api/analyze', { url });
     return response.data;
   },
 
   getAnalysis: async (analysisId) => {
-    const response = await api.get(`/analysis/${analysisId}`);
+    const response = await api.get(`/api/analysis/${analysisId}`);
     return response.data;
   },
 
   getRecentAnalyses: async () => {
-    const response = await api.get('/recent');
+    const response = await api.get('/api/recent');
     return response.data;
   },
 
   healthCheck: async () => {
-    const response = await api.get('/health');
+    const response = await api.get('/api/health');
     return response.data;
   }
 };
