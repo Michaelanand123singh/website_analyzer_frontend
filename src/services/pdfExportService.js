@@ -29,12 +29,12 @@ class PDFExportService {
       this.addFooters();
 
       // Track successful PDF generation
-      trackPDFExport(url);
+      this.trackPDFExport(url);
 
       return this.doc;
     } catch (error) {
       // Track PDF generation error
-      trackError('pdf_generation_error', error.message, url);
+      this.trackError('pdf_generation_error', error.message, url);
       throw error;
     }
   }
@@ -180,7 +180,7 @@ class PDFExportService {
     try {
       this.doc.save(filename);
     } catch (error) {
-      trackError('pdf_download_error', error.message);
+      this.trackError('pdf_download_error', error.message);
       throw error;
     }
   }
@@ -189,8 +189,27 @@ class PDFExportService {
     try {
       return this.doc?.output('blob') || null;
     } catch (error) {
-      trackError('pdf_blob_error', error.message);
+      this.trackError('pdf_blob_error', error.message);
       return null;
+    }
+  }
+
+  // Analytics tracking methods with error handling
+  trackPDFExport(url) {
+    try {
+      trackPDFExport(url);
+    } catch (error) {
+      // Silently handle analytics errors - don't break PDF generation
+      console.log('Analytics tracking failed:', error.message);
+    }
+  }
+
+  trackError(errorType, errorMessage, url = null) {
+    try {
+      trackError(errorType, errorMessage, url);
+    } catch (error) {
+      // Silently handle analytics errors - don't break PDF generation
+      console.log('Analytics tracking failed:', error.message);
     }
   }
 }
