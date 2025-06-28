@@ -11,7 +11,12 @@ const Report = ({ analysis, url }) => {
     const reportData = {
       url,
       timestamp: new Date().toISOString(),
-      analysis
+      analysis,
+      metadata: {
+        version: '2.0',
+        exportType: 'complete',
+        parameters_analyzed: analysis.analysis_metadata?.total_parameters_analyzed || 32
+      }
     };
     
     const blob = new Blob([JSON.stringify(reportData, null, 2)], {
@@ -21,7 +26,7 @@ const Report = ({ analysis, url }) => {
     const url_download = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url_download;
-    a.download = `website-analysis-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `website-analysis-complete-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -36,20 +41,27 @@ const Report = ({ analysis, url }) => {
         throw new Error('Missing analysis data or URL');
       }
 
-      console.log('Starting PDF export...', { analysis, url });
+      console.log('Starting comprehensive PDF export...', { 
+        hasDetailedAnalysis: !!analysis.detailed_analysis,
+        hasTechnicalMetrics: !!analysis.technical_metrics,
+        hasKeyInsights: !!analysis.key_insights,
+        hasPriorityActions: !!analysis.priority_actions,
+        analysis, 
+        url 
+      });
       
       const pdfService = new PDFExportService();
       console.log('PDF Service created');
       
       const doc = pdfService.generateReport(analysis, url);
-      console.log('PDF Report generated');
+      console.log('Comprehensive PDF Report generated');
       
-      const filename = `nextin-vision-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `nextin-vision-complete-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
       
       pdfService.downloadPDF(filename);
       console.log('PDF download initiated');
       
-      console.log('PDF report exported successfully!');
+      console.log('Complete PDF report exported successfully!');
       
     } catch (error) {
       console.error('Detailed error exporting PDF:', {
@@ -106,6 +118,23 @@ const Report = ({ analysis, url }) => {
     { key: 'mobile_optimization', title: 'Mobile', icon: '📱' },
     { key: 'social_integration', title: 'Social', icon: '📢' }
   ];
+
+  // Count analysis completeness for user feedback
+  const getAnalysisCompleteness = () => {
+    let sections = 0;
+    let totalSections = 8; // Base sections
+    
+    if (analysis.category_scores) sections++;
+    if (analysis.detailed_analysis) sections++;
+    if (analysis.technical_metrics) sections++;
+    if (analysis.key_insights?.length > 0) sections++;
+    if (analysis.priority_actions?.length > 0) sections++;
+    if (analysis.competitive_advantages?.length > 0) sections++;
+    if (analysis.risk_factors?.length > 0) sections++;
+    if (analysis.overall_score) sections++;
+
+    return Math.round((sections / totalSections) * 100);
+  };
 
   const CategoryCard = ({ category, categoryData, detailData }) => (
     <div className="bg-white rounded-lg shadow-md border hover:shadow-lg transition-shadow">
@@ -185,189 +214,247 @@ const Report = ({ analysis, url }) => {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Detailed Analysis Report</h2>
-            <p className="text-sm text-gray-500">Powered by NEXTIN VISION</p>
-            <div className="flex items-center text-sm text-gray-600 mt-2">
-              <span>URL: </span>
-              <a href={url} target="_blank" rel="noopener noreferrer" 
-                 className="text-blue-600 hover:underline ml-1 truncate max-w-md">
-                {url}
-              </a>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Comprehensive Analysis Report</h2>
+            <p className="text-sm text-gray-500">
+              Website: {url.length > 60 ? `${url.substring(0, 60)}...` : url}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Generated: {new Date().toLocaleString()} | 
+              Analysis Completeness: {getAnalysisCompleteness()}% | 
+              Parameters Analyzed: {analysis.analysis_metadata?.total_parameters_analyzed || 32}
+            </p>
           </div>
-          <div className="flex flex-col items-end gap-3">
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={exportJSONReport}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              📄 Export JSON
+            </button>
+            <button
+              onClick={exportPDFReport}
+              disabled={isExporting}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"
+            >
+              {isExporting ? '⏳ Generating...' : '📋 Export PDF'}
+            </button>
+          </div>
+        </div>
+
+        {/* Overall Score Display */}
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-3">
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">Overall Score</div>
-              <div className={`text-4xl font-bold ${getScoreColor(analysis.overall_score)}`}>
-                {analysis.overall_score}
-              </div>
-              <div className="text-sm text-gray-500">
-                {analysis.analysis_metadata?.total_parameters_analyzed || 32} parameters analyzed
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={exportJSONReport}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-              >
-                📄 Export JSON
-              </button>
-              <button
-                onClick={exportPDFReport}
-                disabled={isExporting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isExporting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    📑 Export PDF
-                  </>
-                )}
-              </button>
+              <div className="text-3xl font-bold">{analysis.overall_score}</div>
+              <div className="text-xs opacity-80">/10</div>
             </div>
           </div>
+          <h3 className="text-lg font-semibold text-gray-900">Overall Performance Score</h3>
+          <p className="text-sm text-gray-600 max-w-2xl mx-auto mt-2">
+            This comprehensive analysis evaluates your website across multiple critical dimensions including SEO optimization, 
+            user experience, content quality, conversion potential, technical performance, security & accessibility, 
+            mobile optimization, and social integration.
+          </p>
         </div>
       </div>
 
-      {/* Categories Grid - Expandable Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-        {categories.map((category) => (
-          <CategoryCard
-            key={category.key}
-            category={category}
-            categoryData={analysis.category_scores?.[category.key] || 'N/A'}
-            detailData={analysis.detailed_analysis?.[category.key]}
-          />
-        ))}
+      {/* Category Scores Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {categories.map(category => {
+          const categoryScore = analysis.category_scores?.[category.key] || 'N/A';
+          const detailData = analysis.detailed_analysis?.[category.key];
+          
+          return (
+            <CategoryCard
+              key={category.key}
+              category={category}
+              categoryData={categoryScore}
+              detailData={detailData}
+            />
+          );
+        })}
       </div>
 
-      {/* Technical Metrics */}
+      {/* Technical Metrics Section */}
       {analysis.technical_metrics && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Technical Metrics</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="text-center">
-              <div className="font-bold text-blue-600">{analysis.technical_metrics.image_count}</div>
-              <div className="text-gray-600">Images</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-green-600">{analysis.technical_metrics.link_count}</div>
-              <div className="text-gray-600">Links</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-purple-600">
-                {Math.round(analysis.technical_metrics.page_size / 1000)}K
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <span className="text-2xl mr-3">⚙️</span>
+            Technical Metrics
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-blue-600">
+                {Math.round(analysis.technical_metrics.page_size / 1000)}KB
               </div>
-              <div className="text-gray-600">Page Size</div>
+              <div className="text-xs text-gray-600">Page Size</div>
             </div>
-            <div className="text-center">
-              <div className="font-bold text-orange-600">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-purple-600">
+                {analysis.technical_metrics.image_count || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-600">Images</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-green-600">
+                {analysis.technical_metrics.link_count || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-600">Links</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className={`text-lg font-bold ${analysis.technical_metrics.is_https ? 'text-green-600' : 'text-red-600'}`}>
                 {analysis.technical_metrics.is_https ? '✓' : '✗'}
               </div>
-              <div className="text-gray-600">HTTPS</div>
+              <div className="text-xs text-gray-600">HTTPS</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-yellow-600">
+                {analysis.technical_metrics.load_time ? `${analysis.technical_metrics.load_time}ms` : 'N/A'}
+              </div>
+              <div className="text-xs text-gray-600">Load Time</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-indigo-600">
+                {analysis.technical_metrics.response_code || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-600">Status Code</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Insights & Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {analysis.key_insights && analysis.key_insights.length > 0 && (
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">💡 Key Insights</h3>
-            <ul className="space-y-2 text-sm">
-              {analysis.key_insights.map((insight, index) => (
-                <li key={index} className="text-blue-800 flex items-start">
-                  <span className="mr-2">•</span>
-                  {insight}
-                </li>
-              ))}
-            </ul>
+      {/* Key Insights Section */}
+      {analysis.key_insights && analysis.key_insights.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <span className="text-2xl mr-3">💡</span>
+            Key Insights
+          </h3>
+          <div className="space-y-3">
+            {analysis.key_insights.map((insight, index) => (
+              <div key={index} className="flex items-start p-3 bg-blue-50 rounded-lg">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                  {index + 1}
+                </div>
+                <p className="text-gray-700 text-sm flex-1">{insight}</p>
+              </div>
+            ))}
           </div>
-        )}
-
-        {analysis.priority_actions && analysis.priority_actions.length > 0 && (
-          <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-            <h3 className="text-lg font-semibold text-green-900 mb-3">🎯 Priority Actions</h3>
-            <ol className="space-y-2 text-sm">
-              {analysis.priority_actions.map((action, index) => (
-                <li key={index} className="text-green-800 flex items-start">
-                  <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5 flex-shrink-0">
-                    {index + 1}
-                  </span>
-                  {action}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </div>
-
-      {/* Additional Insights */}
-      {(analysis.competitive_advantages || analysis.risk_factors) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {analysis.competitive_advantages && analysis.competitive_advantages.length > 0 && (
-            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-              <h3 className="text-lg font-semibold text-yellow-900 mb-3">⭐ Competitive Advantages</h3>
-              <ul className="space-y-1 text-sm">
-                {analysis.competitive_advantages.map((advantage, index) => (
-                  <li key={index} className="text-yellow-800">• {advantage}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {analysis.risk_factors && analysis.risk_factors.length > 0 && (
-            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-              <h3 className="text-lg font-semibold text-red-900 mb-3">⚠️ Risk Factors</h3>
-              <ul className="space-y-1 text-sm">
-                {analysis.risk_factors.map((risk, index) => (
-                  <li key={index} className="text-red-800">• {risk}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Executive Summary */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Executive Summary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Analysis Date</p>
-            <p className="text-gray-800">{new Date().toLocaleDateString()}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Performance Level</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`px-3 py-1 rounded-full text-sm font-bold ${getScoreColorBg(analysis.overall_score)}`}>
-                {analysis.overall_score}/10
-              </span>
-              <span className="text-sm text-gray-600">
-                ({getScoreText(analysis.overall_score)})
-              </span>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Parameters Analyzed</p>
-            <p className="text-gray-800">{analysis.analysis_metadata?.total_parameters_analyzed || 32}</p>
+      {/* Priority Actions Section */}
+      {analysis.priority_actions && analysis.priority_actions.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <span className="text-2xl mr-3">🎯</span>
+            Priority Actions
+          </h3>
+          <div className="space-y-3">
+            {analysis.priority_actions.map((action, index) => (
+              <div key={index} className="flex items-start p-3 bg-orange-50 rounded-lg">
+                <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  {index + 1}
+                </div>
+                <p className="text-gray-700 text-sm flex-1">{action}</p>
+              </div>
+            ))}
           </div>
         </div>
-        <p className="text-gray-700 leading-relaxed">
-          This comprehensive analysis evaluates your website across eight critical dimensions: 
-          SEO optimization, user experience, content quality, conversion potential, technical performance, 
-          security & accessibility, mobile optimization, and social integration. 
-          The overall score of <strong>{analysis.overall_score}/10</strong> indicates{' '}
-          <strong>{getScoreText(analysis.overall_score).toLowerCase()}</strong> performance. 
-          Focus on the priority actions above to achieve the maximum impact on your website's 
-          effectiveness and business results.
-        </p>
+      )}
+
+      {/* Competitive Advantages Section */}
+      {analysis.competitive_advantages && analysis.competitive_advantages.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <span className="text-2xl mr-3">🏆</span>
+            Competitive Advantages
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {analysis.competitive_advantages.map((advantage, index) => (
+              <div key={index} className="flex items-start p-3 bg-green-50 rounded-lg">
+                <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                  ✓
+                </div>
+                <p className="text-gray-700 text-sm flex-1">{advantage}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Risk Factors Section */}
+      {analysis.risk_factors && analysis.risk_factors.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <span className="text-2xl mr-3">⚠️</span>
+            Risk Factors
+          </h3>
+          <div className="space-y-3">
+            {analysis.risk_factors.map((risk, index) => (
+              <div key={index} className="flex items-start p-3 bg-red-50 rounded-lg">
+                <div className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                  !
+                </div>
+                <p className="text-gray-700 text-sm flex-1">{risk}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Implementation Timeline Section */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+          <span className="text-2xl mr-3">📅</span>
+          Implementation Timeline
+        </h3>
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
+            <h4 className="font-semibold text-red-800 mb-2">Immediate (1-2 weeks)</h4>
+            <p className="text-red-700 text-sm">Address critical security and technical issues</p>
+          </div>
+          <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+            <h4 className="font-semibold text-yellow-800 mb-2">Short-term (1-2 months)</h4>
+            <p className="text-yellow-700 text-sm">Improve SEO fundamentals and user experience</p>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+            <h4 className="font-semibold text-blue-800 mb-2">Medium-term (3-6 months)</h4>
+            <p className="text-blue-700 text-sm">Enhance content quality and conversion optimization</p>
+          </div>
+          <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+            <h4 className="font-semibold text-green-800 mb-2">Long-term (6+ months)</h4>
+            <p className="text-green-700 text-sm">Advanced features and continuous optimization</p>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+          <p className="text-sm text-gray-700 font-medium">
+            💡 <strong>Tip:</strong> Focus on high-impact, low-effort improvements first to maximize ROI.
+          </p>
+        </div>
       </div>
+
+      {/* Analysis Metadata */}
+      {analysis.analysis_metadata && (
+        <div className="bg-gray-50 rounded-lg p-4 border">
+          <h4 className="text-sm font-semibold text-gray-700 mb-2">Analysis Metadata</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
+            <div>
+              <span className="font-medium">Parameters Analyzed:</span> {analysis.analysis_metadata.total_parameters_analyzed || 'N/A'}
+            </div>
+            <div>
+              <span className="font-medium">Analysis Version:</span> 2.0
+            </div>
+            <div>
+              <span className="font-medium">Export Type:</span> Complete
+            </div>
+            <div>
+              <span className="font-medium">Timestamp:</span> {new Date().toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
