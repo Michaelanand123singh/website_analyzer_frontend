@@ -1,15 +1,15 @@
 import axios from 'axios';
 
 // Use environment variable if available, else fallback to Render backend
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://website-analyzer-backend.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // 60 seconds for analysis
+  timeout: 90000, // Increased to 90 seconds for comprehensive analysis
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false, // explicitly disable credentials for CORS clarity
+  withCredentials: false,
 });
 
 // Request interceptor for logging
@@ -23,7 +23,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for logging and error handling
+// Response interceptor for enhanced error handling
 api.interceptors.response.use(
   (response) => {
     console.log('API Response:', response.status, response.config.url);
@@ -31,7 +31,9 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      console.error('API Error:', error.response.status, error.message);
+      console.error('API Error:', error.response.status, error.response.data?.error || error.message);
+    } else if (error.code === 'ECONNABORTED') {
+      console.error('Request Timeout - Analysis taking longer than expected');
     } else {
       console.error('Network/Unknown Error:', error.message);
     }
@@ -39,10 +41,15 @@ api.interceptors.response.use(
   }
 );
 
-// API service with corrected routes
+// Enhanced API service
 export const apiService = {
-  analyzeWebsite: async (url) => {
-    const response = await api.post('/api/analyze', { url });
+  analyzeWebsite: async (url, options = {}) => {
+    const payload = {
+      url,
+      comprehensive: true, // Enable comprehensive analysis
+      ...options
+    };
+    const response = await api.post('/api/analyze', payload);
     return response.data;
   },
 
@@ -51,13 +58,37 @@ export const apiService = {
     return response.data;
   },
 
-  getRecentAnalyses: async () => {
-    const response = await api.get('/api/recent');
+  getRecentAnalyses: async (limit = 10) => {
+    const response = await api.get('/api/recent', { params: { limit } });
+    return response.data;
+  },
+
+  getSummaryReport: async (analysisId) => {
+    const response = await api.get(`/api/analysis/${analysisId}/summary`);
+    return response.data;
+  },
+
+  exportAnalysis: async (analysisId, format = 'pdf') => {
+    const response = await api.get(`/api/analysis/${analysisId}/export`, {
+      params: { format },
+      responseType: format === 'pdf' ? 'blob' : 'json'
+    });
+    return response.data;
+  },
+
+  compareAnalyses: async (analysisIds) => {
+    const response = await api.post('/api/compare', { analysis_ids: analysisIds });
     return response.data;
   },
 
   healthCheck: async () => {
     const response = await api.get('/api/health');
+    return response.data;
+  },
+
+  // New endpoint for getting analysis statistics
+  getAnalysisStats: async () => {
+    const response = await api.get('/api/stats');
     return response.data;
   }
 };
