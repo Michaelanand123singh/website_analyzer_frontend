@@ -1,6 +1,14 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { trackPDFExport, trackError } from './analytics';
+
+// Import autoTable plugin with error handling
+let autoTableAvailable = false;
+try {
+  require('jspdf-autotable');
+  autoTableAvailable = true;
+} catch (error) {
+  console.warn('jspdf-autotable not available, using fallback table generation');
+}
 
 class PDFExportService {
   constructor() {
@@ -117,16 +125,64 @@ class PDFExportService {
       rows.push([label, `${numScore}/10`, status]);
     });
 
-    this.doc.autoTable({
-      head: [['Category', 'Score', 'Status']],
-      body: rows,
-      startY: this.currentY,
-      theme: 'striped',
-      headStyles: { fillColor: this.colors.primary, textColor: [255, 255, 255] },
-      margin: { left: 20, right: 20 }
-    });
+    if (autoTableAvailable && this.doc.autoTable) {
+      // Use autoTable if available
+      try {
+        this.doc.autoTable({
+          head: [['Category', 'Score', 'Status']],
+          body: rows,
+          startY: this.currentY,
+          theme: 'striped',
+          headStyles: { fillColor: this.colors.primary, textColor: [255, 255, 255] },
+          margin: { left: 20, right: 20 }
+        });
+        this.currentY = this.doc.lastAutoTable.finalY + 15;
+      } catch (error) {
+        console.warn('AutoTable failed, using fallback:', error);
+        this.addFallbackTable(rows);
+      }
+    } else {
+      // Fallback table generation
+      this.addFallbackTable(rows);
+    }
+  }
 
-    this.currentY = this.doc.lastAutoTable.finalY + 15;
+  addFallbackTable(rows) {
+    // Manual table generation as fallback
+    this.addSection('Analysis Results', '');
+    
+    // Header
+    this.doc.setFillColor(...this.colors.primary);
+    this.doc.rect(20, this.currentY, 170, 8, 'F');
+    this.setFont(10, 'bold', [255, 255, 255]);
+    this.doc.text('Category', 25, this.currentY + 5);
+    this.doc.text('Score', 100, this.currentY + 5);
+    this.doc.text('Status', 140, this.currentY + 5);
+    this.currentY += 10;
+
+    // Rows
+    this.setFont(9, 'normal');
+    rows.forEach((row, index) => {
+      if (this.currentY > 270) this.addPage();
+      
+      const bgColor = index % 2 === 0 ? [249, 249, 249] : [255, 255, 255];
+      this.doc.setFillColor(...bgColor);
+      this.doc.rect(20, this.currentY - 2, 170, 6, 'F');
+      
+      this.doc.text(row[0], 25, this.currentY + 2);
+      this.doc.text(row[1], 100, this.currentY + 2);
+      
+      // Color code status
+      const statusColor = row[2] === 'Good' ? [46, 204, 113] : 
+                         row[2] === 'Average' ? [241, 196, 15] : [231, 76, 60];
+      this.setFont(9, 'bold', statusColor);
+      this.doc.text(row[2], 140, this.currentY + 2);
+      this.setFont(9, 'normal');
+      
+      this.currentY += 6;
+    });
+    
+    this.currentY += 10;
   }
 
   addRecommendations(analysis) {
