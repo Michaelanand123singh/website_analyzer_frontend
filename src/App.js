@@ -1,14 +1,33 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Analysis from './pages/Analysis';
 import About from './pages/About';
+import { trackPageView } from './services/analytics';
+
+// Component to track page views
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Track page view whenever location changes
+    trackPageView(location.pathname, document.title);
+  }, [location]);
+
+  return null;
+}
 
 function App() {
+  useEffect(() => {
+    // Track initial page load
+    trackPageView(window.location.pathname, document.title);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <AnalyticsTracker />
       <Header />
       <main className="flex-1">
         <Routes>

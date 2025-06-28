@@ -1,24 +1,47 @@
 import React, { useState } from 'react';
+import { trackWebsiteAnalysis, trackUserEngagement, trackExampleClick, trackError } from '../services/analytics';
 
 const UrlInput = ({ onAnalyze, loading }) => {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!url.trim()) {
       setError('Please enter a URL');
+      trackError('validation_error', 'Empty URL submitted');
       return;
     }
 
     if (!url.match(/^https?:\/\/.+/)) {
       setError('Please enter a valid URL starting with http:// or https://');
+      trackError('validation_error', 'Invalid URL format', url);
       return;
     }
 
-    onAnalyze(url.trim());
+    // Track analysis start
+    trackUserEngagement('analysis_started', { url: url.trim() });
+    
+    const startTime = Date.now();
+    
+    try {
+      await onAnalyze(url.trim());
+      
+      // Track successful analysis
+      const analysisTime = Date.now() - startTime;
+      trackWebsiteAnalysis(url.trim(), true, analysisTime);
+    } catch (error) {
+      // Track failed analysis
+      trackWebsiteAnalysis(url.trim(), false);
+      trackError('analysis_error', error.message, url.trim());
+    }
+  };
+
+  const handleExampleClick = (exampleUrl) => {
+    setUrl(exampleUrl);
+    trackExampleClick(exampleUrl);
   };
 
   return (
@@ -52,14 +75,14 @@ const UrlInput = ({ onAnalyze, loading }) => {
         <p className="text-sm text-gray-500 mb-2">Try these examples:</p>
         <div className="flex gap-2 justify-center">
           <button 
-            onClick={() => setUrl('https://stripe.com')}
+            onClick={() => handleExampleClick('https://stripe.com')}
             className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
             disabled={loading}
           >
             stripe.com
           </button>
           <button 
-            onClick={() => setUrl('https://airbnb.com')}
+            onClick={() => handleExampleClick('https://airbnb.com')}
             className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
             disabled={loading}
           >

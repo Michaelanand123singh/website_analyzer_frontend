@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Results from '../components/Results';
 import Report from '../components/Report';
+import { trackViewSwitch, trackUserEngagement } from '../services/analytics';
 
 const Analysis = () => {
   const location = useLocation();
@@ -9,6 +10,25 @@ const Analysis = () => {
   const [activeView, setActiveView] = useState('results');
 
   const { analysis, url } = location.state || {};
+
+  useEffect(() => {
+    // Track when user lands on analysis page
+    if (analysis && url) {
+      trackUserEngagement('analysis_page_viewed', { url, activeView });
+    }
+  }, [analysis, url, activeView]);
+
+  const handleViewSwitch = (newView) => {
+    // Track view switching
+    trackViewSwitch(activeView, newView, url);
+    setActiveView(newView);
+  };
+
+  const handleNewAnalysis = () => {
+    // Track new analysis button click
+    trackUserEngagement('new_analysis_clicked', { from_url: url });
+    navigate('/');
+  };
 
   if (!analysis || !url) {
     return (
@@ -36,7 +56,7 @@ const Analysis = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex space-x-4">
             <button
-              onClick={() => setActiveView('results')}
+              onClick={() => handleViewSwitch('results')}
               className={`px-4 py-2 rounded-lg font-medium ${
                 activeView === 'results'
                   ? 'bg-blue-600 text-white'
@@ -46,7 +66,7 @@ const Analysis = () => {
               📊 Results
             </button>
             <button
-              onClick={() => setActiveView('report')}
+              onClick={() => handleViewSwitch('report')}
               className={`px-4 py-2 rounded-lg font-medium ${
                 activeView === 'report'
                   ? 'bg-blue-600 text-white'
@@ -58,7 +78,7 @@ const Analysis = () => {
           </div>
           
           <button
-            onClick={() => navigate('/')}
+            onClick={handleNewAnalysis}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
             🔍 New Analysis
