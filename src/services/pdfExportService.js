@@ -19,7 +19,7 @@ class PDFExportService {
     this.margin = 20;
     this.contentWidth = this.pageWidth - (this.margin * 2);
     this.colors = {
-      primary: [41, 128, 185],
+      primary: [243, 156, 18],
       secondary: [52, 73, 94],
       accent: [46, 204, 113],
       success: [46, 204, 113],
