@@ -34,6 +34,9 @@ function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
+            {/* Add dynamic route for analysis with slug */}
+            <Route path="/analysis/:slug" element={<Analysis />} />
+            {/* Keep the static route as fallback */}
             <Route path="/analysis" element={<Analysis />} />
             <Route path="/about" element={<About />} />
           </Routes>
