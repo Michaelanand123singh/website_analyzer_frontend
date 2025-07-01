@@ -1,9 +1,49 @@
+# Robots.txt for analyzesites.com
 User-agent: *
 Allow: /
 
-# Sitemap
+# Main pages
+Allow: /
+Allow: /about
+Allow: /analysis
+
+# Block dynamic analysis results for user privacy
+Disallow: /analysis?*
+Disallow: /analysis/*
+Disallow: /*?url=*
+
+# Block common unwanted paths
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/js/
+Disallow: /static/css/
+Disallow: *.json$
+
+# Allow important files
+Allow: /robots.txt
+Allow: /sitemap.xml
+Allow: /favicon.ico
+Allow: /manifest.json
+
+# Sitemap location
 Sitemap: https://www.analyzesites.com/sitemap.xml
 
-# Optional: Block certain paths if needed
-# Disallow: /admin/
-# Disallow: /api/
+# Crawl delay (be nice to smaller sites)
+Crawl-delay: 1
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Block unwanted bots (optional)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
