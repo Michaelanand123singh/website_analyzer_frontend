@@ -1,3 +1,9 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap
+Sitemap: https://www.analyzesites.com/sitemap.xml
+
+# Optional: Block certain paths if needed
+# Disallow: /admin/
+# Disallow: /api/
