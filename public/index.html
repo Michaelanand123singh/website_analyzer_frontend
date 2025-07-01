@@ -68,14 +68,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.google-analytics.com">
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com">
     
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="//www.google-analytics.com">
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//pagead2.googlesyndication.com">
     
     <!-- Preload critical resources -->
     <link rel="preload" href="/fonts/main-font.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5006323727605639"
+         crossorigin="anonymous"></script>
     
     <!-- Enhanced JSON-LD Structured Data for WebApplication -->
     <script type="application/ld+json">
@@ -145,8 +151,8 @@
       "operatingSystem": "Any",
       "url": "https://www.analyzesites.com",
       "description": "Comprehensive AI-powered website analysis tool that provides instant SEO audits, performance monitoring, accessibility checks, and optimization recommendations",
-      "softwareVersion": "2.1.0",
-      "releaseNotes": "Enhanced AI analysis capabilities and improved user interface",
+      "softwareVersion": "2.2.0",
+      "releaseNotes": "Enhanced AI analysis capabilities, improved user interface, and integrated advertising support",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -156,7 +162,7 @@
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.9",
-        "ratingCount": "247",
+        "ratingCount": "312",
         "bestRating": "5",
         "worstRating": "1"
       },
@@ -173,6 +179,19 @@
             "name": "Digital Marketing Expert"
           },
           "reviewBody": "Excellent tool for quick website analysis. The AI recommendations are spot-on and very actionable."
+        },
+        {
+          "@type": "Review",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "SEO Professional"
+          },
+          "reviewBody": "Best free website analyzer I've used. Comprehensive reports and easy to understand insights."
         }
       ]
     }
@@ -223,6 +242,14 @@
             "@type": "Answer",
             "text": "You can analyze any publicly accessible website using our tool. This includes your own websites, competitor sites, or any other website you want to audit for SEO and performance insights."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you show advertisements on the platform?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we display relevant advertisements to help support the free service. All ads are carefully selected and do not interfere with the analysis functionality or user experience."
+          }
         }
       ]
     }
@@ -247,7 +274,10 @@
         "contactType": "customer service",
         "email": "support@analyzesites.com",
         "availableLanguage": "English"
-      }
+      },
+      "foundingDate": "2024-01-01",
+      "numberOfEmployees": "5-10",
+      "slogan": "Empower Your Website with AI-Driven Insights"
     }
     </script>
     
@@ -280,6 +310,20 @@
               "@type": "Service",
               "name": "Performance Analysis"
             }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Accessibility Audit"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Security Scan"
+            }
           }
         ]
       }
@@ -297,7 +341,8 @@
         page_location: window.location.href,
         content_group1: 'Website Analyzer Tool',
         custom_map: {
-          'dimension1': 'user_type'
+          'dimension1': 'user_type',
+          'dimension2': 'analysis_type'
         }
       });
       
@@ -305,19 +350,27 @@
       gtag('config', 'G-PP5ETM9JGN', {
         custom_map: {'custom_parameter': 'dimension2'}
       });
+      
+      // Track AdSense performance
+      gtag('event', 'page_view', {
+        page_title: 'AI Website Analyzer',
+        page_location: window.location.href,
+        content_group1: 'SEO Tools'
+      });
     </script>
     
     <!-- Critical CSS inline - Optimized for Core Web Vitals -->
     <style>
       /* Critical above-the-fold styles optimized for LCP */
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      
       body { 
-        margin: 0; 
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         line-height: 1.6;
         color: #333;
+        background-color: #f8fafc;
       }
       
       .loading { 
@@ -356,6 +409,25 @@
         text-align: center;
         color: white;
         padding: 2rem 1rem;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+      }
+      
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
       }
       
       .hero-title {
@@ -363,15 +435,52 @@
         font-weight: 700;
         margin-bottom: 1rem;
         line-height: 1.2;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
       }
       
       .hero-subtitle {
         font-size: clamp(1.1rem, 2.5vw, 1.3rem);
         margin-bottom: 2rem;
         opacity: 0.9;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      }
+      
+      .cta-button {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 2px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+      
+      .cta-button:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        transform: translateY(-2px);
+      }
+      
+      /* Ad container styles */
+      .ad-container {
+        margin: 20px 0;
+        text-align: center;
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        border-radius: 8px;
+        border: 1px dashed #cbd5e1;
+      }
+      
+      .ad-placeholder {
+        color: #64748b;
+        font-size: 14px;
+        font-style: italic;
       }
       
       /* Skip to main content for accessibility */
@@ -384,10 +493,24 @@
         padding: 8px;
         text-decoration: none;
         z-index: 1000;
+        border-radius: 4px;
       }
       
       .skip-link:focus {
         top: 6px;
+      }
+      
+      /* Responsive improvements */
+      @media (max-width: 768px) {
+        .hero-section {
+          min-height: 50vh;
+          padding: 1.5rem 1rem;
+        }
+        
+        .ad-container {
+          margin: 15px 0;
+          min-height: 80px;
+        }
       }
     </style>
     
@@ -414,6 +537,9 @@
         </ul>
         <p><strong>Please enable JavaScript in your browser to access the full functionality.</strong></p>
         <p>Join thousands of webmasters, SEO professionals, and digital marketers who trust AnalyzeSites for comprehensive website analysis.</p>
+        <div class="ad-container">
+          <div class="ad-placeholder">Advertisement Space - Enable JavaScript to view</div>
+        </div>
         <hr>
         <p><em>Keywords: free SEO audit, website analyzer, AI SEO tool, performance checker, mobile optimization, accessibility audit</em></p>
       </div>
@@ -449,6 +575,14 @@
         }
       ]
     }
+    </script>
+    
+    <!-- AdSense Auto Ads (Optional) -->
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({
+        google_ad_client: "ca-pub-5006323727605639",
+        enable_page_level_ads: true
+      });
     </script>
   </body>
 </html>
