@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -26,18 +27,20 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <AnalyticsTracker />
-      <Header />
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/analysis" element={<Analysis />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+    <HelmetProvider>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <AnalyticsTracker />
+        <Header />
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </HelmetProvider>
   );
 }
 

@@ -13,15 +13,25 @@
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.6.2",
+    "react-router-sitemap": "^1.2.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "gtag": "^1.0.1",
+    "schema-dts": "^1.1.2",
+    "react-intersection-observer": "^9.13.1"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && npm run generate-sitemap && npm run optimize-build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "analyze-bundle": "npx webpack-bundle-analyzer build/static/js/*.js",
+    "optimize-build": "node scripts/optimize-build.js",
+    "seo-audit": "node scripts/seo-audit.js",
+    "precommit": "npm run generate-sitemap"
   },
   "eslintConfig": {
     "extends": [
@@ -44,6 +54,29 @@
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17"
-  }
+    "tailwindcss": "^3.4.17",
+    "lighthouse": "^12.2.1",
+    "puppeteer": "^23.9.0",
+    "imagemin": "^8.0.1",
+    "imagemin-webp": "^8.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-mozjpeg": "^10.0.0",
+    "compression-webpack-plugin": "^11.1.0",
+    "webpack-bundle-analyzer": "^4.10.2"
+  },
+  "homepage": "https://www.analyzesites.com",
+  "description": "Free website analyzer tool for SEO optimization, performance analysis, and site insights",
+  "keywords": [
+    "website analyzer",
+    "SEO tool",
+    "website audit",
+    "performance analysis",
+    "site optimization",
+    "free SEO tool"
+  ],
+  "author": {
+    "name": "Your Name",
+    "url": "https://www.analyzesites.com"
+  },
+  "license": "MIT"
 }
