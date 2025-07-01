@@ -8,19 +8,22 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.10.0",
+    "gtag": "^1.0.1",
+    "imagemin-gifsicle": "^7.0.0",
+    "imagemin-jpegtran": "^8.0.0",
+    "imagemin-svgo": "^11.0.1",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-helmet-async": "^2.0.5",
+    "react-intersection-observer": "^9.13.1",
     "react-router-dom": "^7.6.2",
     "react-router-sitemap": "^1.2.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4",
-    "gtag": "^1.0.1",
     "schema-dts": "^1.1.2",
-    "react-intersection-observer": "^9.13.1"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -31,7 +34,12 @@
     "analyze-bundle": "npx webpack-bundle-analyzer build/static/js/*.js",
     "optimize-build": "node scripts/optimize-build.js",
     "seo-audit": "node scripts/seo-audit.js",
-    "precommit": "npm run generate-sitemap"
+    "precommit": "npm run generate-sitemap",
+    "dev": "npm start",
+    "preview": "serve -s build",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "install-force": "npm install --legacy-peer-deps"
   },
   "eslintConfig": {
     "extends": [
@@ -53,15 +61,17 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
-    "lighthouse": "^12.2.1",
-    "puppeteer": "^23.9.0",
-    "imagemin": "^8.0.1",
-    "imagemin-webp": "^8.0.0",
-    "imagemin-pngquant": "^10.0.0",
-    "imagemin-mozjpeg": "^10.0.0",
     "compression-webpack-plugin": "^11.1.0",
+    "eslint": "^8.57.0",
+    "imagemin": "^8.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-webp": "^8.0.0",
+    "lighthouse": "^12.2.1",
+    "postcss": "^8.5.6",
+    "puppeteer": "^23.9.0",
+    "serve": "^14.2.3",
+    "tailwindcss": "^3.4.17",
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "homepage": "https://www.analyzesites.com",
@@ -78,5 +88,16 @@
     "name": "Your Name",
     "url": "https://www.analyzesites.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/website-analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/website-analyzer/issues"
+  }
 }

@@ -1,0 +1,25 @@
+{
+  "generated": "2025-07-01T08:32:13.462Z",
+  "baseUrl": "https://www.analyzesites.com",
+  "totalUrls": 3,
+  "routes": [
+    {
+      "path": "/",
+      "fullUrl": "https://www.analyzesites.com/",
+      "priority": 1,
+      "changefreq": "weekly"
+    },
+    {
+      "path": "/about",
+      "fullUrl": "https://www.analyzesites.com/about",
+      "priority": 0.8,
+      "changefreq": "monthly"
+    },
+    {
+      "path": "/analysis",
+      "fullUrl": "https://www.analyzesites.com/analysis",
+      "priority": 0.9,
+      "changefreq": "weekly"
+    }
+  ]
+}

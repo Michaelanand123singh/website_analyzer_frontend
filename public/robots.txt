@@ -7,7 +7,7 @@ Allow: /
 Allow: /about
 Allow: /analysis
 
-# Block dynamic analysis results for user privacy
+# Disallow dynamic analysis results for privacy
 Disallow: /analysis?*
 Disallow: /analysis/*
 Disallow: /*?url=*
@@ -16,20 +16,18 @@ Disallow: /*?url=*
 Disallow: /admin/
 Disallow: /api/
 Disallow: /_next/
-Disallow: /static/js/
-Disallow: /static/css/
+Disallow: /static/
 Disallow: *.json$
 
 # Allow important files
 Allow: /robots.txt
 Allow: /sitemap.xml
 Allow: /favicon.ico
-Allow: /manifest.json
 
 # Sitemap location
 Sitemap: https://www.analyzesites.com/sitemap.xml
 
-# Crawl delay (be nice to smaller sites)
+# Crawl delay (optional - remove if you want faster crawling)
 Crawl-delay: 1
 
 # Specific bot instructions
@@ -40,10 +38,3 @@ Crawl-delay: 0
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
-
-# Block unwanted bots (optional)
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /

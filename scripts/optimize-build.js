@@ -1,93 +1,66 @@
-// scripts/optimize-build.js
 const fs = require('fs');
 const path = require('path');
-const imagemin = require('imagemin');
-const imageminWebp = require('imagemin-webp');
-const imageminPngquant = require('imagemin-pngquant');
-const imageminMozjpeg = require('imagemin-mozjpeg');
 
-const optimizeBuild = async () => {
-  console.log('🚀 Starting build optimization...');
-  
-  const buildDir = path.join(__dirname, '..', 'build');
-  
-  if (!fs.existsSync(buildDir)) {
-    console.log('❌ Build directory not found. Run "npm run build" first.');
-    return;
-  }
-
+// Use dynamic import for ES modules
+async function optimizeBuild() {
   try {
+    const { default: imagemin } = await import('imagemin');
+    const { default: imageminJpegtran } = await import('imagemin-jpegtran');
+    const { default: imageminPngquant } = await import('imagemin-pngquant');
+    const { default: imageminSvgo } = await import('imagemin-svgo');
+    const { default: imageminWebp } = await import('imagemin-webp');
+
+    const buildDir = path.join(__dirname, '..', 'build');
+    
+    console.log('🚀 Starting build optimization...');
+
     // Optimize images
-    console.log('🖼️  Optimizing images...');
-    const imageFiles = await imagemin([`${buildDir}/**/*.{jpg,jpeg,png}`], {
-      destination: `${buildDir}/optimized`,
+    console.log('📸 Optimizing images...');
+    
+    const files = await imagemin([`${buildDir}/static/media/*.{jpg,jpeg,png,svg}`], {
+      destination: `${buildDir}/static/media`,
       plugins: [
-        imageminMozjpeg({quality: 85}),
-        imageminPngquant({quality: [0.6, 0.8]}),
-        imageminWebp({quality: 80})
+        imageminJpegtran(),
+        imageminPngquant({
+          quality: [0.6, 0.8]
+        }),
+        imageminSvgo({
+          plugins: [
+            {
+              name: 'removeViewBox',
+              active: false
+            }
+          ]
+        })
       ]
     });
+
+    console.log(`✅ Optimized ${files.length} images`);
+
+    // Generate WebP versions
+    console.log('🖼️  Generating WebP versions...');
     
-    if (imageFiles.length > 0) {
-      console.log(`✅ Optimized ${imageFiles.length} images`);
-    }
+    const webpFiles = await imagemin([`${buildDir}/static/media/*.{jpg,jpeg,png}`], {
+      destination: `${buildDir}/static/media`,
+      plugins: [
+        imageminWebp({
+          quality: 80
+        })
+      ]
+    });
+
+    console.log(`✅ Generated ${webpFiles.length} WebP images`);
+
+    // Optimize CSS and JS (basic minification check)
+    console.log('🎨 Checking CSS/JS optimization...');
     
-    // Generate performance budget report
-    const staticDir = path.join(buildDir, 'static');
-    if (fs.existsSync(staticDir)) {
-      const jsFiles = fs.readdirSync(path.join(staticDir, 'js'))
-        .filter(file => file.endsWith('.js'))
-        .map(file => {
-          const filePath = path.join(staticDir, 'js', file);
-          const stats = fs.statSync(filePath);
-          return {
-            name: file,
-            size: stats.size,
-            sizeKB: Math.round(stats.size / 1024)
-          };
-        });
-      
-      const cssFiles = fs.readdirSync(path.join(staticDir, 'css'))
-        .filter(file => file.endsWith('.css'))
-        .map(file => {
-          const filePath = path.join(staticDir, 'css', file);
-          const stats = fs.statSync(filePath);
-          return {
-            name: file,
-            size: stats.size,
-            sizeKB: Math.round(stats.size / 1024)
-          };
-        });
-      
-      console.log('\n📊 Bundle Analysis:');
-      console.log('JavaScript files:');
-      jsFiles.forEach(file => {
-        const status = file.sizeKB > 250 ? '⚠️ ' : '✅';
-        console.log(`  ${status} ${file.name}: ${file.sizeKB}KB`);
-      });
-      
-      console.log('CSS files:');
-      cssFiles.forEach(file => {
-        const status = file.sizeKB > 50 ? '⚠️ ' : '✅';
-        console.log(`  ${status} ${file.name}: ${file.sizeKB}KB`);
-      });
-      
-      const totalJS = jsFiles.reduce((sum, file) => sum + file.sizeKB, 0);
-      const totalCSS = cssFiles.reduce((sum, file) => sum + file.sizeKB, 0);
-      
-      console.log(`\n📈 Total bundle size: ${totalJS + totalCSS}KB`);
-      console.log(`   JavaScript: ${totalJS}KB`);
-      console.log(`   CSS: ${totalCSS}KB`);
-      
-      if (totalJS > 500) {
-        console.log('⚠️  Consider code splitting to reduce JavaScript bundle size');
-      }
-    }
+    const cssFiles = fs.readdirSync(`${buildDir}/static/css`).filter(file => file.endsWith('.css'));
+    const jsFiles = fs.readdirSync(`${buildDir}/static/js`).filter(file => file.endsWith('.js'));
     
-    // Add cache headers suggestion
-    console.log('\n🔧 Recommended .htaccess rules for caching:');
-    console.log(`
-# Add to your .htaccess file:
+    console.log(`✅ Found ${cssFiles.length} CSS files and ${jsFiles.length} JS files`);
+
+    // Add cache headers to static files (create .htaccess for Apache)
+    const htaccessContent = `# Cache static assets
 <IfModule mod_expires.c>
   ExpiresActive on
   ExpiresByType text/css "access plus 1 year"
@@ -95,15 +68,35 @@ const optimizeBuild = async () => {
   ExpiresByType image/png "access plus 1 year"
   ExpiresByType image/jpg "access plus 1 year"
   ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
   ExpiresByType image/webp "access plus 1 year"
 </IfModule>
-    `);
-    
-    console.log('✅ Build optimization completed!');
+
+# Gzip compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE application/xhtml+xml
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>`;
+
+    fs.writeFileSync(`${buildDir}/.htaccess`, htaccessContent);
+    console.log('✅ Generated .htaccess for caching and compression');
+
+    console.log('🎉 Build optimization completed successfully!');
     
   } catch (error) {
-    console.error('❌ Error during optimization:', error);
+    console.error('❌ Build optimization failed:', error.message);
+    // Don't fail the build process, just log the error
+    console.log('⚠️  Continuing without optimization...');
   }
-};
+}
 
+// Run the optimization
 optimizeBuild();
