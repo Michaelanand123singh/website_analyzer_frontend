@@ -86,18 +86,26 @@ const Report = ({ analysis, url }) => {
 
   const getScoreColor = (score) => {
     const numScore = parseInt(score);
-    if (numScore >= 8) return 'text-green-600';
-    if (numScore >= 6) return 'text-yellow-600';
+    if (numScore >= 8) return 'text-emerald-600';
+    if (numScore >= 6) return 'text-amber-600';
     if (numScore >= 4) return 'text-orange-600';
     return 'text-red-600';
   };
 
   const getScoreColorBg = (score) => {
     const numScore = parseInt(score);
-    if (numScore >= 8) return 'text-green-600 bg-green-100';
-    if (numScore >= 6) return 'text-yellow-600 bg-yellow-100';
-    if (numScore >= 4) return 'text-orange-600 bg-orange-100';
-    return 'text-red-600 bg-red-100';
+    if (numScore >= 8) return 'text-emerald-600 bg-emerald-50';
+    if (numScore >= 6) return 'text-amber-600 bg-amber-50';
+    if (numScore >= 4) return 'text-orange-600 bg-orange-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const getScoreBgColor = (score) => {
+    const numScore = parseInt(score);
+    if (numScore >= 8) return 'bg-emerald-50 border-emerald-200';
+    if (numScore >= 6) return 'bg-amber-50 border-amber-200';
+    if (numScore >= 4) return 'bg-orange-50 border-orange-200';
+    return 'bg-red-50 border-red-200';
   };
 
   const getScoreText = (score) => {
@@ -137,121 +145,146 @@ const Report = ({ analysis, url }) => {
   };
 
   const CategoryCard = ({ category, categoryData, detailData }) => (
-    <div className="bg-white rounded-lg shadow-md border hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200 overflow-hidden">
       <div 
-        className="p-4 cursor-pointer"
+        className="p-6 cursor-pointer"
         onClick={() => setExpandedCategory(expandedCategory === category.key ? null : category.key)}
       >
         <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <span className="text-2xl mr-3">{category.icon}</span>
-            <h3 className="text-lg font-semibold text-gray-900">{category.title}</h3>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-lg">
+              <span className="text-2xl">{category.icon}</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.title}</h3>
+              <p className="text-sm text-gray-500">Click to expand details</p>
+            </div>
           </div>
-          <div className="flex items-center">
-            <span className={`text-2xl font-bold mr-2 ${getScoreColor(categoryData)}`}>
-              {categoryData}
-            </span>
-            <span className="text-gray-400">
+          <div className="flex items-center space-x-3">
+            <div className={`px-4 py-2 rounded-lg border-2 ${getScoreBgColor(categoryData)}`}>
+              <span className={`text-2xl font-bold ${getScoreColor(categoryData)}`}>
+                {categoryData}
+              </span>
+            </div>
+            <div className="text-gray-400 text-xl">
               {expandedCategory === category.key ? '▼' : '▶'}
-            </span>
+            </div>
           </div>
         </div>
       </div>
 
       {expandedCategory === category.key && detailData && (
-        <div className="px-4 pb-4 border-t bg-gray-50">
-          <div className="grid grid-cols-2 gap-3 mt-3 mb-4">
-            {Object.entries(detailData)
-              .filter(([key, value]) => key !== 'issues' && key !== 'recommendations' && typeof value === 'string')
-              .map(([key, value]) => (
-                <div key={key} className="flex justify-between text-sm">
-                  <span className="text-gray-600 capitalize">
-                    {key.replace(/_/g, ' ')}:
-                  </span>
-                  <span className={`font-medium ${getScoreColor(value)}`}>
-                    {value}
-                  </span>
+        <div className="px-6 pb-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {Object.entries(detailData)
+                .filter(([key, value]) => key !== 'issues' && key !== 'recommendations' && typeof value === 'string')
+                .map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-center py-2 px-3 bg-white rounded-lg border border-gray-100">
+                    <span className="text-sm font-medium text-gray-700 capitalize">
+                      {key.replace(/_/g, ' ')}
+                    </span>
+                    <span className={`text-sm font-semibold ${getScoreColor(value)}`}>
+                      {value}
+                    </span>
+                  </div>
+                ))
+              }
+            </div>
+
+            {detailData.issues && detailData.issues.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-semibold text-red-700 mb-3 text-sm uppercase tracking-wide">Top Issues</h4>
+                <div className="space-y-2">
+                  {detailData.issues.slice(0, 2).map((issue, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 bg-red-50 rounded-lg border border-red-100">
+                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-sm text-red-800 leading-relaxed">{issue}</span>
+                    </div>
+                  ))}
                 </div>
-              ))
-            }
+              </div>
+            )}
+
+            {detailData.recommendations && detailData.recommendations.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-emerald-700 mb-3 text-sm uppercase tracking-wide">Key Recommendations</h4>
+                <div className="space-y-2">
+                  {detailData.recommendations.slice(0, 2).map((rec, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-sm text-emerald-800 leading-relaxed">{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-
-          {detailData.issues && detailData.issues.length > 0 && (
-            <div className="mb-3">
-              <h4 className="font-medium text-red-600 mb-1 text-sm">Top Issues:</h4>
-              <ul className="text-xs text-gray-600 space-y-1">
-                {detailData.issues.slice(0, 2).map((issue, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-red-500 mr-1">•</span>
-                    {issue}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {detailData.recommendations && detailData.recommendations.length > 0 && (
-            <div>
-              <h4 className="font-medium text-green-600 mb-1 text-sm">Key Recommendations:</h4>
-              <ul className="text-xs text-gray-600 space-y-1">
-                {detailData.recommendations.slice(0, 2).map((rec, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-green-500 mr-1">•</span>
-                    {rec}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       )}
     </div>
   );
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header Section with Export Buttons */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Comprehensive Analysis Report</h2>
-            <p className="text-sm text-gray-500">
-              Website: {url.length > 60 ? `${url.substring(0, 60)}...` : url}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Generated: {new Date().toLocaleString()} | 
-              Analysis Completeness: {getAnalysisCompleteness()}% | 
-              Parameters Analyzed: {analysis.analysis_metadata?.total_parameters_analyzed || 32}
-            </p>
+      <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl shadow-sm p-8 mb-8 border border-gray-200">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0 mb-8">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">Comprehensive Analysis Report</h1>
+            <div className="space-y-2">
+              <div className="flex items-center text-base text-gray-600">
+                <span className="font-medium">Website:</span>
+                <span className="ml-2 text-gray-800 break-all">
+                  {url.length > 60 ? `${url.substring(0, 60)}...` : url}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                <span className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span>Generated: {new Date().toLocaleString()}</span>
+                </span>
+                <span className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>Completeness: {getAnalysisCompleteness()}%</span>
+                </span>
+                <span className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                  <span>Parameters: {analysis.analysis_metadata?.total_parameters_analyzed || 32}</span>
+                </span>
+              </div>
+            </div>
           </div>
           
-          <div className="flex space-x-3">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={exportJSONReport}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium flex items-center space-x-2"
             >
-              📄 Export JSON
+              <span>📄</span>
+              <span>Export JSON</span>
             </button>
             <button
               onClick={exportPDFReport}
               disabled={isExporting}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"
+              className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium disabled:opacity-50 flex items-center space-x-2"
             >
-              {isExporting ? '⏳ Generating...' : '📋 Export PDF'}
+              <span>{isExporting ? '⏳' : '📋'}</span>
+              <span>{isExporting ? 'Generating...' : 'Export PDF'}</span>
             </button>
           </div>
         </div>
 
         {/* Overall Score Display */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-3">
+          <div className="inline-flex items-center justify-center w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 text-white mb-6 shadow-lg">
             <div className="text-center">
-              <div className="text-3xl font-bold">{analysis.overall_score}</div>
-              <div className="text-xs opacity-80">/10</div>
+              <div className="text-4xl font-bold">{analysis.overall_score}</div>
+              <div className="text-sm opacity-90">/10</div>
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">Overall Performance Score</h3>
-          <p className="text-sm text-gray-600 max-w-2xl mx-auto mt-2">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Overall Performance Score</h2>
+          <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed">
             This comprehensive analysis evaluates your website across multiple critical dimensions including SEO optimization, 
             user experience, content quality, conversion potential, technical performance, security & accessibility, 
             mobile optimization, and social integration.
@@ -260,65 +293,70 @@ const Report = ({ analysis, url }) => {
       </div>
 
       {/* Category Scores Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {categories.map(category => {
-          const categoryScore = analysis.category_scores?.[category.key] || 'N/A';
-          const detailData = analysis.detailed_analysis?.[category.key];
-          
-          return (
-            <CategoryCard
-              key={category.key}
-              category={category}
-              categoryData={categoryScore}
-              detailData={detailData}
-            />
-          );
-        })}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Category Performance</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {categories.map(category => {
+            const categoryScore = analysis.category_scores?.[category.key] || 'N/A';
+            const detailData = analysis.detailed_analysis?.[category.key];
+            
+            return (
+              <CategoryCard
+                key={category.key}
+                category={category}
+                categoryData={categoryScore}
+                detailData={detailData}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Technical Metrics Section */}
       {analysis.technical_metrics && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <span className="text-2xl mr-3">⚙️</span>
-            Technical Metrics
-          </h3>
+        <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-100">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mr-4">
+              <span className="text-2xl">⚙️</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">Technical Metrics</h3>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-lg font-bold text-blue-600">
+            <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="text-2xl font-bold text-blue-600 mb-2">
                 {Math.round(analysis.technical_metrics.page_size / 1000)}KB
               </div>
-              <div className="text-xs text-gray-600">Page Size</div>
+              <div className="text-sm font-medium text-blue-800">Page Size</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-lg font-bold text-purple-600">
+            <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-100">
+              <div className="text-2xl font-bold text-purple-600 mb-2">
                 {analysis.technical_metrics.image_count || 'N/A'}
               </div>
-              <div className="text-xs text-gray-600">Images</div>
+              <div className="text-sm font-medium text-purple-800">Images</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-lg font-bold text-green-600">
+            <div className="text-center p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+              <div className="text-2xl font-bold text-emerald-600 mb-2">
                 {analysis.technical_metrics.link_count || 'N/A'}
               </div>
-              <div className="text-xs text-gray-600">Links</div>
+              <div className="text-sm font-medium text-emerald-800">Links</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className={`text-lg font-bold ${analysis.technical_metrics.is_https ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className={`text-2xl font-bold mb-2 ${analysis.technical_metrics.is_https ? 'text-emerald-600' : 'text-red-600'}`}>
                 {analysis.technical_metrics.is_https ? '✓' : '✗'}
               </div>
-              <div className="text-xs text-gray-600">HTTPS</div>
+              <div className="text-sm font-medium text-gray-700">HTTPS</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-lg font-bold text-yellow-600">
+            <div className="text-center p-4 bg-amber-50 rounded-xl border border-amber-100">
+              <div className="text-2xl font-bold text-amber-600 mb-2">
                 {analysis.technical_metrics.load_time ? `${analysis.technical_metrics.load_time}ms` : 'N/A'}
               </div>
-              <div className="text-xs text-gray-600">Load Time</div>
+              <div className="text-sm font-medium text-amber-800">Load Time</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-lg font-bold text-indigo-600">
+            <div className="text-center p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+              <div className="text-2xl font-bold text-indigo-600 mb-2">
                 {analysis.technical_metrics.response_code || 'N/A'}
               </div>
-              <div className="text-xs text-gray-600">Status Code</div>
+              <div className="text-sm font-medium text-indigo-800">Status Code</div>
             </div>
           </div>
         </div>
@@ -326,18 +364,20 @@ const Report = ({ analysis, url }) => {
 
       {/* Key Insights Section */}
       {analysis.key_insights && analysis.key_insights.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <span className="text-2xl mr-3">💡</span>
-            Key Insights
-          </h3>
-          <div className="space-y-3">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 mb-8 border border-blue-200">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+              <span className="text-white text-2xl">💡</span>
+            </div>
+            <h3 className="text-2xl font-bold text-blue-900">Key Insights</h3>
+          </div>
+          <div className="space-y-4">
             {analysis.key_insights.map((insight, index) => (
-              <div key={index} className="flex items-start p-3 bg-blue-50 rounded-lg">
-                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+              <div key={index} className="flex items-start space-x-4 p-4 bg-white/70 rounded-xl border border-blue-200">
+                <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                   {index + 1}
                 </div>
-                <p className="text-gray-700 text-sm flex-1">{insight}</p>
+                <p className="text-blue-900 leading-relaxed flex-1">{insight}</p>
               </div>
             ))}
           </div>
@@ -346,18 +386,20 @@ const Report = ({ analysis, url }) => {
 
       {/* Priority Actions Section */}
       {analysis.priority_actions && analysis.priority_actions.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <span className="text-2xl mr-3">🎯</span>
-            Priority Actions
-          </h3>
-          <div className="space-y-3">
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 mb-8 border border-orange-200">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mr-4">
+              <span className="text-white text-2xl">🎯</span>
+            </div>
+            <h3 className="text-2xl font-bold text-orange-900">Priority Actions</h3>
+          </div>
+          <div className="space-y-4">
             {analysis.priority_actions.map((action, index) => (
-              <div key={index} className="flex items-start p-3 bg-orange-50 rounded-lg">
-                <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+              <div key={index} className="flex items-start space-x-4 p-4 bg-white/70 rounded-xl border border-orange-200">
+                <div className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                   {index + 1}
                 </div>
-                <p className="text-gray-700 text-sm flex-1">{action}</p>
+                <p className="text-orange-900 leading-relaxed flex-1">{action}</p>
               </div>
             ))}
           </div>
@@ -366,18 +408,20 @@ const Report = ({ analysis, url }) => {
 
       {/* Competitive Advantages Section */}
       {analysis.competitive_advantages && analysis.competitive_advantages.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <span className="text-2xl mr-3">🏆</span>
-            Competitive Advantages
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-8 mb-8 border border-emerald-200">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mr-4">
+              <span className="text-white text-2xl">🏆</span>
+            </div>
+            <h3 className="text-2xl font-bold text-emerald-900">Competitive Advantages</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {analysis.competitive_advantages.map((advantage, index) => (
-              <div key={index} className="flex items-start p-3 bg-green-50 rounded-lg">
-                <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+              <div key={index} className="flex items-start space-x-3 p-4 bg-white/70 rounded-xl border border-emerald-200">
+                <div className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                   ✓
                 </div>
-                <p className="text-gray-700 text-sm flex-1">{advantage}</p>
+                <p className="text-emerald-900 leading-relaxed flex-1">{advantage}</p>
               </div>
             ))}
           </div>
@@ -386,18 +430,20 @@ const Report = ({ analysis, url }) => {
 
       {/* Risk Factors Section */}
       {analysis.risk_factors && analysis.risk_factors.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <span className="text-2xl mr-3">⚠️</span>
-            Risk Factors
-          </h3>
-          <div className="space-y-3">
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 mb-8 border border-red-200">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mr-4">
+              <span className="text-white text-2xl">⚠️</span>
+            </div>
+            <h3 className="text-2xl font-bold text-red-900">Risk Factors</h3>
+          </div>
+          <div className="space-y-4">
             {analysis.risk_factors.map((risk, index) => (
-              <div key={index} className="flex items-start p-3 bg-red-50 rounded-lg">
-                <div className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+              <div key={index} className="flex items-start space-x-4 p-4 bg-white/70 rounded-xl border border-red-200">
+                <div className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                   !
                 </div>
-                <p className="text-gray-700 text-sm flex-1">{risk}</p>
+                <p className="text-red-900 leading-relaxed flex-1">{risk}</p>
               </div>
             ))}
           </div>
@@ -405,52 +451,80 @@ const Report = ({ analysis, url }) => {
       )}
 
       {/* Implementation Timeline Section */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
-        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-          <span className="text-2xl mr-3">📅</span>
-          Implementation Timeline
-        </h3>
-        <div className="space-y-4">
-          <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
-            <h4 className="font-semibold text-red-800 mb-2">Immediate (1-2 weeks)</h4>
-            <p className="text-red-700 text-sm">Address critical security and technical issues</p>
+      <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-100">
+        <div className="flex items-center mb-6">
+          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mr-4">
+            <span className="text-2xl">📅</span>
           </div>
-          <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-            <h4 className="font-semibold text-yellow-800 mb-2">Short-term (1-2 months)</h4>
-            <p className="text-yellow-700 text-sm">Improve SEO fundamentals and user experience</p>
+          <h3 className="text-2xl font-bold text-gray-900">Implementation Timeline</h3>
+        </div>
+        <div className="space-y-6">
+          <div className="p-6 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
+            <div className="flex items-center mb-3">
+              <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+              <h4 className="text-lg font-bold text-red-800">Immediate (1-2 weeks)</h4>
+            </div>
+            <p className="text-red-700 leading-relaxed">Address critical security and technical issues that could impact site functionality or user safety.</p>
           </div>
-          <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-            <h4 className="font-semibold text-blue-800 mb-2">Medium-term (3-6 months)</h4>
-            <p className="text-blue-700 text-sm">Enhance content quality and conversion optimization</p>
+          <div className="p-6 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl border border-amber-200">
+            <div className="flex items-center mb-3">
+              <div className="w-3 h-3 bg-amber-500 rounded-full mr-3"></div>
+              <h4 className="text-lg font-bold text-amber-800">Short-term (1-2 months)</h4>
+            </div>
+            <p className="text-amber-700 leading-relaxed">Improve SEO fundamentals and user experience to increase visibility and engagement.</p>
           </div>
-          <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
-            <h4 className="font-semibold text-green-800 mb-2">Long-term (6+ months)</h4>
-            <p className="text-green-700 text-sm">Advanced features and continuous optimization</p>
+          <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+            <div className="flex items-center mb-3">
+              <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+              <h4 className="text-lg font-bold text-blue-800">Medium-term (3-6 months)</h4>
+            </div>
+            <p className="text-blue-700 leading-relaxed">Enhance content quality and conversion optimization to drive better business results.</p>
+          </div>
+          <div className="p-6 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
+            <div className="flex items-center mb-3">
+              <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3"></div>
+              <h4 className="text-lg font-bold text-emerald-800">Long-term (6+ months)</h4>
+            </div>
+            <p className="text-emerald-700 leading-relaxed">Implement advanced features and establish continuous optimization processes.</p>
           </div>
         </div>
-        <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-          <p className="text-sm text-gray-700 font-medium">
-            💡 <strong>Tip:</strong> Focus on high-impact, low-effort improvements first to maximize ROI.
-          </p>
+        <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-sm">💡</span>
+            </div>
+            <div>
+              <p className="text-gray-800 font-semibold mb-1">Pro Tip</p>
+              <p className="text-gray-700 text-sm leading-relaxed">Focus on high-impact, low-effort improvements first to maximize return on investment and build momentum.</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Analysis Metadata */}
       {analysis.analysis_metadata && (
-        <div className="bg-gray-50 rounded-lg p-4 border">
-          <h4 className="text-sm font-semibold text-gray-700 mb-2">Analysis Metadata</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
-            <div>
-              <span className="font-medium">Parameters Analyzed:</span> {analysis.analysis_metadata.total_parameters_analyzed || 'N/A'}
+        <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-200">
+          <h4 className="text-lg font-bold text-gray-800 mb-4">Analysis Metadata</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-white rounded-xl border border-gray-100">
+              <div className="text-xl font-bold text-blue-600 mb-2">
+                {analysis.analysis_metadata.total_parameters_analyzed || 'N/A'}
+              </div>
+              <div className="text-sm font-medium text-gray-700">Parameters Analyzed</div>
             </div>
-            <div>
-              <span className="font-medium">Analysis Version:</span> 2.0
+            <div className="text-center p-4 bg-white rounded-xl border border-gray-100">
+              <div className="text-xl font-bold text-purple-600 mb-2">2.0</div>
+              <div className="text-sm font-medium text-gray-700">Analysis Version</div>
             </div>
-            <div>
-              <span className="font-medium">Export Type:</span> Complete
+            <div className="text-center p-4 bg-white rounded-xl border border-gray-100">
+              <div className="text-xl font-bold text-emerald-600 mb-2">Complete</div>
+              <div className="text-sm font-medium text-gray-700">Export Type</div>
             </div>
-            <div>
-              <span className="font-medium">Timestamp:</span> {new Date().toLocaleDateString()}
+            <div className="text-center p-4 bg-white rounded-xl border border-gray-100">
+              <div className="text-xl font-bold text-orange-600 mb-2">
+                {new Date().toLocaleDateString()}
+              </div>
+              <div className="text-sm font-medium text-gray-700">Report Date</div>
             </div>
           </div>
         </div>
